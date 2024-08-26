@@ -1,0 +1,294 @@
+import java.util.*;
+import java.io.*;
+class BudgetWordle
+{
+    public static String word="";
+    public static int y=1,g=2,co=0, count=0;
+    public static int a[]= {0,0,0,0,0};
+    public static char l=' ';
+    public static String input="";
+    public static String in[]={"","","","","",""};
+    public static int uni=0;
+    public static int pos[]= {5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5};
+    public static String key[]= {"Q","W","E","R","T","Y","U","I","O","P","A","S","D","F","G","H","J","K","L","Z","X","C","V","B","N","M"};
+    public static int position(String c)
+    {
+        c=c.toUpperCase().trim();
+        for(int i=0;i<26;i++)
+        {
+            if(key[i].compareToIgnoreCase(c)==0)
+                return i;
+        }
+        return 0;
+    }
+    public static void assign()
+    {
+        for(int i=0;i<5;i++)
+        {
+            if(pos[position(String.valueOf(input.charAt(i)))]==g)
+                continue;
+            else if(pos[position(String.valueOf(input.charAt(i)))]==y&&a[i]==g)
+                pos[position(String.valueOf(input.charAt(i)))]=g;
+            else if(pos[position(String.valueOf(input.charAt(i)))]==y&&a[i]==0)
+                continue;
+            else 
+                pos[position(String.valueOf(input.charAt(i)))]=a[i];   		
+        }
+    }
+    public static void keyboard()
+    {
+        System.out.println();
+        assign();
+        for(int i=0;i<26;i++)
+        {
+            if(pos[i]==0)
+                System.out.print("\u001B[36m"+key[i]+"\u001B[0m ");
+            else if(pos[i]==y)
+                System.out.print("\u001B[33m"+key[i]+"\u001B[0m ");
+            else if(pos[i]==g)
+                System.out.print("\u001B[32m"+key[i]+"\u001B[0m ");
+            else
+                System.out.print(key[i]+" ");
+            if(i==9||i==18)
+            {
+                System.out.println();
+                System.out.print(" ");
+                if(i==18)
+                    System.out.print(" ");
+            }
+        }
+        System.out.println();
+    }
+    public static String assignword() //assigns wordle to guess
+    {
+        String ab="";
+        int min=1, max=2309;
+        try
+        {
+            FileInputStream fis=new FileInputStream("C:/users/<user>/<folder>/list_of_wordles.txt");
+            Scanner sc=new Scanner(fis);
+            Random rng=new Random();
+            int l=rng.nextInt(2309)+1;
+            for(int i=0;i<14855;i++)
+            {
+                if(l==(i+1))
+                    return sc.nextLine().trim();
+                else
+                    ab=sc.nextLine();
+            }
+        }catch(IOException e)
+        {
+            e.printStackTrace();
+        }
+        return "";
+    } 
+    public static boolean read_input(String s) //checks if inputted word is a valid 5 letter word
+    {
+        s=s.trim();
+        s=s.toLowerCase();
+        try
+        {
+            FileInputStream fis=new FileInputStream("C:/users/<user>/<folder>/list_of_valid_words.txt");
+            Scanner sc=new Scanner(fis);
+            while(sc.hasNextLine())
+            {
+                String b=sc.nextLine().trim();
+                if(b.charAt(0)==s.charAt(0))
+                    if(b.compareTo(s)==0)
+                        return true;
+            }
+        }catch(IOException e)
+        {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    public static void reset() //resets wordle to continue playing
+    {
+        for(int i=0;i<6;i++)
+            in[i]="";
+        for(int i=0;i<5;i++)
+            a[i]=0;
+        uni=0;
+        co=0;
+        for(int i=0;i<26;i++)
+            pos[i]= 5;
+        word=assignword().toUpperCase();
+    }  
+    public static boolean array(int[] p) //checks if inputted word is same as assigned wordle
+    {
+        for(int i=0;i<5;i++)
+            if(p[i]!=g)
+                return true;
+        return false;
+    }
+    public static int count(String s, char c)//counts number of characters in a string
+    {
+        int cont=0;
+        for(int i=0;i<5;i++)
+            if(s.charAt(i)==c)
+                cont++;
+        return cont;
+    }
+    public static void a(String s)//assigns green, yellow and white to each character based on the rules
+    {
+        String temp="";
+        for(int i=0;i<5;i++)
+            a[i]=0;
+        for(int i=0;i<5;i++)
+        {
+            if(word.contains(String.valueOf(s.charAt(i))))
+            {
+                if(temp.contains(String.valueOf(s.charAt(i)))==false)
+                {
+                    temp=temp+s.charAt(i);
+                    int m=count(word, s.charAt(i));
+                    for(int j=0;j<5;j++)
+                    {
+                        if(s.charAt(j)==s.charAt(i))
+                        {
+                            for(int k=0;k<5;k++)
+                            {
+                                if(s.charAt(j)==word.charAt(k)&&j==k)
+                                {
+                                    a[j]=g;
+                                    m--;
+                                }
+                            }
+                        }
+                    }
+                    for(int j=0;j<5;j++)
+                    {
+                        if(m>0)
+                        {
+                            if(s.charAt(j)==s.charAt(i))
+                            {
+                                for(int k=0;k<5;k++)
+                                {
+                                    if(s.charAt(j)==word.charAt(k)&&a[j]!=g)
+                                    {
+                                        a[j]=y;
+                                        m--;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    public static void display(int count)//displays the word with assigned green, yellow and white
+    {
+        char kb=' ';
+        Scanner sc=new Scanner(System.in);
+        if(count<7)
+        {
+            System.out.println("  W  O  R  D  I  E\n");
+            for(int i=0;i<6;i++)
+            {  
+                if(in[i]!="")
+                {
+                    a(in[i]);
+                    String t=in[i];
+                    System.out.print("     ");
+                    for(int j=0;j<5;j++)
+                    {
+                        if(a[j]==g)
+                            System.out.print("\u001B[32m"+t.charAt(j)+"\u001B[0m ");
+                        else if(a[j]==y)
+                            System.out.print("\u001B[33m"+t.charAt(j)+"\u001B[0m ");
+                        else
+                            System.out.print("\u001B[36m"+t.charAt(j)+"\u001B[0m ");
+                    }
+                    System.out.println();
+                    if(array(a)==false)
+                    {    	
+                        System.out.println("\n"+in[i]+" is the correct word!\n");
+                        keyboard();
+                        uni=1;
+                        System.out.println("Do you want to play again? Enter 'yes' or 'no'. Any other input will automatically be considered as 'no'.");
+                        String ch=sc.next().toUpperCase();
+                        switch(ch)
+                        {
+                            case "YES":
+                                reset();
+                                System.out.println("Enter your first guess: ");
+                                processing();
+                                break;
+                            case "NO":
+                                uni=1;
+                                processing();
+                                break;
+                        }
+                        if(uni==1)
+                        {
+                            kb='n';
+                            break;
+                        }
+                    }
+                }
+                else if(uni!=1)
+
+                    System.out.println("     _ _ _ _ _");
+            }
+            if(array(a)!=false&&kb!='n')
+                keyboard();
+            processing();
+        }
+    }
+    public static void processing()//does something
+    {
+        if(uni!=1)
+        {
+            Scanner sc=new Scanner(System.in);
+            if(co==6)
+            {
+                System.out.println("\nYou lose. The answer was: "+word);
+                System.out.println("\nDo you want to play again? Enter 'yes' or 'no'. Any other input will automatically be considered as 'no'.");
+                String ch=sc.next().toUpperCase();
+                switch(ch)
+                {
+                    case "YES":
+                        reset();
+                        System.out.println("Enter your first guess: ");
+                        processing();
+                        break;
+                    case "NO":
+                        uni=1;
+                        processing();
+                        break;
+                }
+            }
+            else
+            {
+                input=sc.next().toUpperCase();
+                if(input.length()==5)
+                {
+                    if(read_input(input)==true)
+                    {
+                        in[co]=input;
+                        System.out.print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+                        display(++co);
+                    }
+                    else
+                    {
+                        System.out.println("Invalid word inputted. Enter a valid word.");
+                        processing();
+                    }
+                }
+                else
+                {
+                    System.out.println("Invalid word size. Enter a valid five letter word.");
+                    processing();
+                }
+            }
+        }
+    }
+    public static void main(String[] args)
+    {
+        System.out.println("Welcome to BudgetWordle!\nHere are the rules:\nYou can only enter a five letter word; no more or less.\nA Green letter indicates that the letter is present in the word, and at that position.\nA Yellow letter indicates that the letter is present in the word, but not at that position.\nA Light Blue letter indicates that the letter is not present in the word.\nEnter your first guess!");
+        reset();
+        processing();
+    }
+}
